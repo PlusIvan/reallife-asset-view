@@ -4,15 +4,31 @@ export class RequestAPI{
      * 
      * @param {*} object 
      * @example
-     * {headers:{'auth-token':'string','user-id':0}, data: {}, url:''}
+     * {headers:{'auth-token':'string','user-id':0}, data: {}}
      */
     constructor(object) {
-        this.API = 'https://client-dot-horus-rlt-dev.appspot.com/api/client/v1/';
+        this.API = {
+          armazem: {
+            method: 'get',
+            api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/Armazem/v1/read'
+          },
+          stock: {
+            method: 'get',
+            api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/Stock/v1/read'
+          },
+          search: {
+            method: 'post',
+            api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/AssetFullView/v1/read'
+          }
+        };
         this.obj = object;
       }
 
-      async get() {
-          const response = await fetch(this.API + this.obj.url,{
+      /**
+       * @param {string} key 
+       */
+      async get(key) {
+          const response = await fetch(this.API[key].api,{
             method: 'get',  
             headers:{
             ...this.obj.headers
