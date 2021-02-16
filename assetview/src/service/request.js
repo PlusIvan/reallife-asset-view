@@ -9,16 +9,20 @@ export class RequestAPI{
     constructor(object) {
         this.API = {
           armazem: {
-            method: 'get',
+            method: 'post',
             api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/Armazem/v1/read'
           },
           stock: {
-            method: 'get',
+            method: 'post',
             api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/Stock/v1/read'
           },
           search: {
             method: 'post',
             api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/AssetFullView/v1/read'
+          },
+          state: {
+            method: 'post',
+            api: 'https://crud-dot-horus-rlt-dev.appspot.com/api/AssetState/v1/read'
           }
         };
         this.obj = object;
@@ -37,12 +41,21 @@ export class RequestAPI{
       }
 
       /**
-       * 
+       * @param {string} key 
        */
-      async post(){
-          const response = await fetch(this.API + this.obj.url,{
+      async post(key){
+
+          const JSONbody = this.obj.body;
+
+          const formData = new FormData();
+          
+          Object.keys(JSONbody).forEach((key) => {
+            formData.append(key, JSONbody[key].toString());
+          });
+         
+          const response = await fetch(this.API[key].api,{
               method: 'post',
-              body: new FormData(document.getElementById('form')),
+              body: formData,
               headers:{
                   ...this.obj.headers
                 }});

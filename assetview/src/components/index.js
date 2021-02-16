@@ -9,11 +9,17 @@ import SearchIcon from '@material-ui/icons/Search';
 
 import NativeSelect from '@material-ui/core/NativeSelect';
 
+const headers = {'auth-token':'mbPY%UhK&u6NebnKppfr7NN54sgsc7','USER-AUTH-TOKEN':'TOKENTEST'};
+
 class App extends React.Component {
-state = {
-  warehouse: 0,
-  warehouses:[{id:1,name:'NA'}]
-}
+    state = {
+      warehouse: 0,
+      warehouses:[{id:1,name:'NA'}],
+      stock: 0,
+      stocks: [{id:0,name:'NA'}],
+      state: 0,
+      states: [{id:0,name:'NA'}]
+    }
     constructor(props) {
         super(props);
         //this.state = {list: []};
@@ -26,7 +32,43 @@ state = {
        */
       async searchForm(){
 
-        return 0;
+        const [
+          partNumber,
+          MAC,
+          selectedWareHouseId,
+          selectedStockId,
+          serialNumbers,
+          rlString,
+          assetNumber,
+          selectedStateId
+        ] = [
+          document.getElementById("partNumber").value,
+          document.getElementById("MAC").value,
+          document.getElementById("warehouse-dropdown").value,
+          document.getElementById("stock-dropdown").value,
+          document.getElementById("serialNumbers").value,
+          document.getElementById("rlString").value,
+          document.getElementById("assetNumber").value,
+          document.getElementById("states-dropdown").value
+        ];
+
+
+        const body = {
+          MAC: MAC,
+          serialNumber: (/[,\-]/.test(serialNumbers)) ? [...serialNumbers.split(',')] : serialNumbers,
+          assetNumber: (/[,\-]/.test(assetNumber)) ? [...assetNumber.split(',')] : assetNumber,
+          partNumber: partNumber.toString(),
+          rlString: rlString.toString(),
+          stockID: Number(selectedStockId),
+          armazemID: Number(selectedWareHouseId),
+          stateID: Number(selectedStateId)
+        }
+
+        const crudPost = await new RequestAPI({headers:headers,body:body}).post("search");
+
+        console.log(crudPost);
+
+
       }
 
       /**
@@ -38,14 +80,30 @@ state = {
         /**
          * @type {Array}
          */
-        const warehouse = await new RequestAPI(
-          {headers:{'auth-token':'mbPY%UhK&u6NebnKppfr7NN54sgsc7','USER-AUTH-TOKEN':'TOKENTEST'}, data: {}, url:''}).get('armazem');
+        const warehouse = await new RequestAPI({headers:headers,body:{isActive: 1}}).post('armazem');
 
-        
         this.setState((state,props) => ({warehouses: 
-          warehouse.map((key) => { return {id:Number(key.armazemID),name:key.armazemNome} })
+          warehouse.map((key) => { return { id:Number(key.armazemID),name:key.armazemNome} })
         }));
 
+        /**
+         * @type {Array}
+         */
+        const stock = await new RequestAPI({headers:headers,body:{isActive: 1}}).post('stock');
+        
+        this.setState((state,props) => ({stocks: 
+          stock.map((key) => { return { id:Number(key.stockID),name:key.stockNome} })
+        }));
+
+
+        /**
+         * @type {Array}
+         */
+        const states = await new RequestAPI({headers:headers,body:{isActive: 1}}).post('state');
+        
+        this.setState((state,props) => ({states: 
+          states.map((key) => { return { id:Number(key.assetStateID),name:key.assetStateNome} })
+        }));
 
       }
 
@@ -72,11 +130,18 @@ render(){
         <p>Asset List</p>
         <div className="flex space-x-2">
 
-          <TextField label="Size"  defaultValue="Part Number" size="small" />
-          <TextField label="Size"  defaultValue="MAC" size="small" />
+          <TextField label="Part Number" size="small" id="partNumber"/>
+          <TextField label="MAC" size="small" id="MAC"/>
           <NativeSelect className="w-64" id="warehouse-dropdown" label="Armazem" onChange={this.handleChange}>
           {
             this.state.warehouses.map((option) => (
+              <option  value={option.id} key={option.id}>{option.name}</option >
+            ))
+          }
+          </NativeSelect>
+          <NativeSelect className="w-64" id="stock-dropdown" label="Stock">
+          {
+            this.state.stocks.map((option) => (
               <option  value={option.id} key={option.id}>{option.name}</option >
             ))
           }
@@ -85,13 +150,20 @@ render(){
 
             
           </TextField> */}
-          <Button variant="contained" ><SearchIcon></SearchIcon></Button>
+          <Button variant="contained" onClick={this.searchForm}><SearchIcon></SearchIcon></Button>
 
         </div>
         <div className="flex space-x-2 py-3">
-          <TextField label="Serial Number(s)" size="small" multiline/>
-          <TextField label="rlString" size="small"/>
-          <TextField label="assetNumber"  size="small" />
+          <TextField label="Serial Number(s)" size="small" multiline id="serialNumbers"/>
+          <TextField label="assetNumber"  size="small" multiline id="assetNumber"/>
+          <TextField label="rlString" size="small" id="rlString"/>
+          <NativeSelect className="w-64" id="states-dropdown" label="Stock">
+          {
+            this.state.states.map((option) => (
+              <option  value={option.id} key={option.id}>{option.name}</option >
+            ))
+          }
+          </NativeSelect>
         </div>
     </div>
       
